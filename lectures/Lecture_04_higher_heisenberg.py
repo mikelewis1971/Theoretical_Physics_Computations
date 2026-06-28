@@ -251,6 +251,48 @@ def explain_ccm_reconstruction():
     print("  Pati-Salam algebra without any additional postulate.")
 
 
+def visualize():
+    """Plot: the commutator [D,Y] sharpening into a delta function as grid
+    resolution increases, for several resolutions overlaid."""
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from viz_helpers import show_and_save, NEUTRAL, SEAM_LINE, ACCENT_GEN
+
+    fig, ax = plt.subplots(figsize=(8.5, 5))
+    ax.set_title("[D_Σ, Y_Σ] Sharpening into a Delta Function as Grid Resolution Increases",
+                 fontsize=12.5, fontweight="bold", color=NEUTRAL)
+
+    R = 1.0
+    L = 6.0
+    colors = ACCENT_GEN + [SEAM_LINE]
+    for n_points, color in zip([201, 801, 3201, 12801], colors):
+        s = np.linspace(-L, L, n_points)
+        ds = s[1] - s[0]
+        sign_s = np.sign(s); sign_s[s == 0] = 0.0
+
+        def D_op(f):
+            out = np.zeros_like(f)
+            out[1:-1] = (f[2:] - f[:-2]) / (2 * ds)
+            return out
+
+        def Y_op(f):
+            return -R * sign_s * f
+
+        sigma_test = 0.5
+        f = np.exp(-s ** 2 / (2 * sigma_test ** 2))
+        commutator_f = D_op(Y_op(f)) - Y_op(D_op(f))
+        ax.plot(s, commutator_f, color=color, lw=2,
+                 label=f"{n_points} grid points  (ds={ds:.3f})")
+
+    ax.axvline(0, color=NEUTRAL, lw=1, ls=":")
+    ax.set_xlim(-1.5, 1.5)
+    ax.set_xlabel("seam normal coordinate  s")
+    ax.set_ylabel("[D, Y] f(s)  (reduced scalar model)")
+    ax.legend(fontsize=9.5, title="finer grid -> sharper spike, same total weight")
+    fig.tight_layout()
+    show_and_save(fig, "04_delta_function_sharpening", lecture_label="Lecture 4")
+
+
 def run():
     banner("LECTURE 4 / PAPER IV -- The Higher Heisenberg Relation on the Seam")
     print("Professor's opening remark:")
@@ -266,6 +308,7 @@ def run():
     symbolic_commutator_proof()
     prove_geodesic_correction()
     explain_ccm_reconstruction()
+    visualize()
 
     subsection("Lecture 4 summary")
     print("  Seam Clifford algebra and gamma5_Sigma verified on explicit matrices.")
