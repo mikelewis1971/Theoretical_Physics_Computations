@@ -255,6 +255,90 @@ def demonstrate_prime_residues_mod_6(n_max=200):
     print("  (Z_2) and 'three-ness' (Z_3) is forced into a Z_6 = 2x3 pattern.")
 
 
+def visualize():
+    """THE FLAGSHIP VISUAL: the Higgs kink, and three Poschl-Teller bound
+    states sitting in their well, labeled generation 1/2/3."""
+    import math
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from viz_helpers import show_and_save, SPHERICAL, HYPERBOLIC, SEAM_LINE, NEUTRAL, ACCENT_GEN
+
+    v, mH = 1.0, 2.0
+    k = mH / 2.0  # the CORRECTED exponent
+    s = np.linspace(-4, 4, 1000)
+    H = v * np.tanh(k * s)
+
+    fig, ax = plt.subplots(figsize=(7.5, 4.5))
+    ax.set_title("The Higgs Field IS the Seam Curvature Kink   H_K(s) = v·tanh(s·m_H/2)",
+                 fontsize=12, fontweight="bold", color=NEUTRAL)
+    ax.plot(s, H, color=NEUTRAL, lw=2.5)
+    ax.fill_between(s, H, -v, where=(s < 0), color=SPHERICAL, alpha=0.15)
+    ax.fill_between(s, H, v, where=(s >= 0), color=HYPERBOLIC, alpha=0.15)
+    ax.axvline(0, color=SEAM_LINE, ls="--", lw=1.5)
+    ax.text(0.1, 0, "seam Γ\n(H=0)", color=SEAM_LINE, fontsize=9, fontweight="bold")
+    ax.set_xlabel("seam normal coordinate  s")
+    ax.set_ylabel("Higgs field  H_K(s) / v")
+    ax.set_ylim(-1.4, 1.4)
+    fig.tight_layout()
+    show_and_save(fig, "05_higgs_kink_profile", lecture_label="Lecture 5")
+
+    z = np.linspace(-6, 6, 2000)
+    ell = 2
+    potential = -ell * (ell + 1) / np.cosh(z) ** 2
+
+    psi0 = math.sqrt(3 / 4) * (1 / np.cosh(z)) ** 2
+    psi1 = math.sqrt(3 / 2) * np.tanh(z) * (1 / np.cosh(z))
+    psi2_shape = (5 * np.tanh(z) ** 2 - 1) * (1 / np.cosh(z))
+    psi2 = psi2_shape / np.max(np.abs(psi2_shape)) * 0.9
+
+    E0, E1, E2 = -4.0, -1.0, 0.0
+    scale = 1.1
+
+    fig, ax = plt.subplots(figsize=(9, 6.2))
+    ax.set_title("Why Exactly Three Generations: Three Notes in One Well\n"
+                 "ℓ(ℓ+1) = 6  ⟹  ℓ = 2  ⟹  n_c = 3 colors  ⟹  N_gen = 3 (APS index)",
+                 fontsize=12, fontweight="bold", color=NEUTRAL)
+    ax.plot(z, potential, color=NEUTRAL, lw=2.5, zorder=2,
+             label="Pöschl–Teller potential  −6·sech²(z)")
+    ax.fill_between(z, potential, -7, color="#EFEFEF", zorder=1)
+    for E, psi, label, color in [
+        (E0, psi0, "Generation 1 (n=0, deepest bound)", ACCENT_GEN[0]),
+        (E1, psi1, "Generation 2 (n=1)", ACCENT_GEN[1]),
+        (E2, psi2, "Generation 3 (n=2, threshold state)", ACCENT_GEN[2]),
+    ]:
+        ax.axhline(E, color=color, lw=1, ls=":", zorder=2)
+        ax.plot(z, E + scale * psi, color=color, lw=2.2, zorder=3, label=label)
+        ax.text(5.7, E + 0.25, f"E = {E:.0f}", color=color, fontsize=9.5,
+                 fontweight="bold", ha="right")
+    ax.set_xlabel("rescaled seam coordinate  z = s·m_H/2")
+    ax.set_ylabel("energy  /  wavefunction amplitude (offset to its energy level)")
+    ax.set_ylim(-7, 2.2)
+    ax.legend(loc="upper center", fontsize=9, framealpha=0.95, ncol=1)
+    fig.tight_layout()
+    show_and_save(fig, "05_three_notes_in_a_well", lecture_label="Lecture 5 (FLAGSHIP)")
+
+    mH_val = 2.0
+    H_old = np.tanh(s * mH_val / math.sqrt(2))
+    H_fixed = np.tanh(s * mH_val / 2.0)
+    fig, ax = plt.subplots(figsize=(7.5, 4.5))
+    ax.set_title("The Bug Fix: Kink Exponent m_H/√2 (old) vs m_H/2 (corrected)",
+                 fontsize=12, fontweight="bold", color=NEUTRAL)
+    ax.plot(s, H_old, color="#999999", lw=2, ls="--", label="OLD (incorrect): tanh(s·m_H/√2)")
+    ax.plot(s, H_fixed, color=SEAM_LINE, lw=2.5, label="CORRECTED: tanh(s·m_H/2)")
+    ax.axvline(0, color=NEUTRAL, lw=1, ls=":")
+    ax.set_xlabel("seam normal coordinate  s")
+    ax.set_ylabel("H_K(s) / v")
+    ax.legend(loc="lower right", fontsize=9.5)
+    ax.text(-3.8, -0.95,
+            "Both give the SAME Pöschl-Teller coefficient (−6·sech²(z))\n"
+            "once rescaled to their own z=k·s. ℓ=2 ⟹ n_c=3 ⟹ N_gen=3 is\n"
+            "UNCHANGED by this fix -- only the energy scale shifts\n"
+            "(m_H²/2 → m_H²/4). See BUGFIXES.md.",
+            fontsize=8.5, color=NEUTRAL, va="bottom")
+    fig.tight_layout()
+    show_and_save(fig, "05_bugfix_kink_exponent", lecture_label="Lecture 5")
+
+
 def run():
     banner("LECTURE 5 / PAPER V -- The Higgs Kink, Poschl-Teller Spectrum, and Three Generations")
     print("Professor's opening remark:")
@@ -272,6 +356,7 @@ def run():
     derive_generation_count(n_c)
     verify_no_fourth_generation()
     demonstrate_prime_residues_mod_6()
+    visualize()
 
     subsection("Lecture 5 summary")
     print("  Corrected kink: H_K(s) = v*tanh(s*m_H/2)  [was incorrectly m_H/sqrt(2)]")
