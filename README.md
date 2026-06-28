@@ -1,5 +1,4 @@
-[README.md](https://github.com/user-attachments/files/29439961/README.md)
-[Upload# The Chiral Seam Masterclass
+# The Chiral Seam Masterclass
 
 A complete, self-verifying Python walkthrough of the eight-paper chiral-seam
 framework: from the two-body Heisenberg uncertainty principle to the
@@ -120,7 +119,6 @@ order-of-magnitude — not precision — estimate of the galactic Berry coupling
 - The t/b quark mass ratio cross-check, which fails by ~13× and is
   attributed to SU(2) isospin structure not captured by the pure
   generation-hierarchy formula (Lecture 6, stated as an honest limitation)
-ing README.md…]()
 
 
 
