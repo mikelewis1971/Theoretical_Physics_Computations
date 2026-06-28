@@ -243,6 +243,59 @@ def prove_lichnerowicz_spectral_gap():
     print("  non-zero APS index used in Lecture 5 to fix the generation count.")
 
 
+def visualize():
+    """Plot: the CKM unitarity triangle (signed area = Jarlskog J), and the
+    four anomaly running-totals settling to zero as particles are added."""
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from viz_helpers import show_and_save, NEUTRAL, SEAM_LINE, ACCENT_GEN
+
+    Vud_Vub = complex(1.0, 0.0)
+    Vcd_Vcb = complex(-0.22, -0.12)
+    Vtd_Vtb = complex(-0.78, 0.12)
+
+    pts = [0, Vud_Vub, Vud_Vub + Vcd_Vcb]
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.set_title("The CKM Unitarity Triangle\nCP violation = signed area ≠ 0 (Jarlskog J)",
+                 fontsize=12.5, fontweight="bold", color=NEUTRAL)
+    xs = [p.real for p in pts] + [pts[0].real]
+    ys = [p.imag for p in pts] + [pts[0].imag]
+    ax.plot(xs, ys, color=SEAM_LINE, lw=2.5, marker="o", markersize=6)
+    ax.fill(xs, ys, color=SEAM_LINE, alpha=0.15)
+    ax.set_aspect("equal")
+    ax.set_xlabel("Re"); ax.set_ylabel("Im")
+    ax.text(0.35, 0.25, "non-zero area\n⟺ CP violation", color=SEAM_LINE,
+             fontsize=10, fontweight="bold", ha="center")
+    fig.tight_layout()
+    show_and_save(fig, "03_ckm_unitarity_triangle", lecture_label="Lecture 3")
+
+    Y_qL, Y_uR, Y_dR, Y_lL, Y_eR = 1/3, 4/3, -2/3, -1.0, -2.0
+    N_c = 3
+    steps = ["+ q_L (x3 color)", "+ l_L", "+ u_R (x3 color)", "+ d_R (x3 color)", "+ e_R"]
+    su3 = np.cumsum([2 * Y_qL, 0, -Y_uR, -Y_dR, 0])
+    su2 = np.cumsum([N_c * Y_qL, Y_lL, 0, 0, 0])
+    grav = np.cumsum([N_c * 2 * Y_qL, 2 * Y_lL, -N_c * Y_uR, -N_c * Y_dR, -Y_eR])
+    u1cubed = np.cumsum([N_c * 2 * Y_qL ** 3, 2 * Y_lL ** 3, -N_c * Y_uR ** 3,
+                          -N_c * Y_dR ** 3, -Y_eR ** 3])
+
+    fig, ax = plt.subplots(figsize=(8.5, 5))
+    ax.set_title("Standard Model Anomaly Cancellation: Four Running Totals Settle to Zero",
+                 fontsize=12.5, fontweight="bold", color=NEUTRAL)
+    x = np.arange(len(steps) + 1)
+    for series, label, color in [(su3, "SU(3)² U(1)", ACCENT_GEN[0]),
+                                   (su2, "SU(2)² U(1)", ACCENT_GEN[1]),
+                                   (grav, "gravitational", ACCENT_GEN[2]),
+                                   (u1cubed, "U(1)³", SEAM_LINE)]:
+        ax.plot(x, np.concatenate([[0], series]), marker="o", lw=2, label=label, color=color)
+    ax.axhline(0, color=NEUTRAL, lw=1, ls=":")
+    ax.set_xticks(x)
+    ax.set_xticklabels(["start"] + steps, rotation=20, ha="right", fontsize=8.5)
+    ax.set_ylabel("running anomaly total")
+    ax.legend(fontsize=9.5)
+    fig.tight_layout()
+    show_and_save(fig, "03_anomaly_cancellation", lecture_label="Lecture 3")
+
+
 def run():
     banner("LECTURE 3 / PAPER III -- Complete Algebraic Structures")
     print("Professor's opening remark:")
@@ -257,6 +310,7 @@ def run():
     prove_jarlskog_structure()
     verify_anomaly_cancellation()
     prove_lichnerowicz_spectral_gap()
+    visualize()
 
     subsection("Lecture 3 summary")
     print("  Cl(5,0) explicit generators verified; 32 = one generation's H_f.")
