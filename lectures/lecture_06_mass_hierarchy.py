@@ -14,8 +14,11 @@ The universal mass formula:
 
     m_n  =  M_f * exp( -k_f / (2-n) )      n = 0 (heaviest), 1, 2
 
-uses one parameter k_f per fermion type. The ratio k_u/k_d = 4/3 is
-predicted by SU(3) color Casimir ratios.
+uses one parameter k_f per fermion type. (An earlier claim that
+k_u/k_d = 4/3 follows from "SU(3) color Casimir ratios" has been
+RETRACTED -- see Eq 11.21 below and lecture_06b_rigorous_corrections.py.
+Up-type and down-type quarks are both SU(3) color triplets, so their
+Casimirs are identical; color cannot predict this ratio.)
 
 Equations implemented (physic.py sections 3, 7, 11):
   Eq 3.1   Scaling factor              exp(-k_f / (2-n)^2)  [original phi^4 scaling]
@@ -28,7 +31,8 @@ Equations implemented (physic.py sections 3, 7, 11):
   Eq 11.16 Lightest mass               m_2 = M_f exp(-k_f/Lambda^2)
   Eq 11.17 Seam length Lambda^2        Lambda^2 = k_f/(k_f/2 + ln(m_1/m_2))
   Eq 11.18 Physical seam length        L_Gamma = Lambda sqrt(2) / m_H
-  Eq 11.21 SU(3) Casimir ratio         k_u / k_d = C2(up)/C2(down) = 4/3
+  Eq 11.21 SU(3) Casimir ratio (RETRACTED): color cannot distinguish
+           up-type from down-type quarks; see prove_su3_casimir_ratio().
 """
 
 import math
@@ -177,31 +181,53 @@ def run_fermion_fits():
 
 def prove_su3_casimir_ratio(k_u, k_d):
     """
-    Eq 11.21: the theory predicts k_u / k_d = C2(up)/C2(down) = (4/3)/(3/4) wait--
-    Both up and down quarks are in the SAME SU(3) fundamental representation
-    (they both carry color charge). The ratio k_u/k_d reflects instead the
-    different Yukawa coupling strengths of the two quark sectors to the Higgs.
-    The structural prediction (from the seam geometry) is k_u/k_d = 4/3, the
-    ratio of the quadratic Casimirs for the two SU(2) isospin representations
-    (T_3=+1/2 for up-type vs T_3=-1/2 for down-type within the SU(2) doublet).
+    RETRACTED, on re-examination (see lecture_06b_rigorous_corrections.py
+    for the full derivation). The original claim here was that
+    k_u/k_d = 4/3 follows from an "SU(3) Casimir ratio." This does not
+    survive scrutiny on two independent counts:
+
+    (1) Internal inconsistency: the code below computed
+        C2_up/C2_down = (4/3)/(3/4) = 16/9, then asserted the prediction
+        was 4/3 directly -- a different number than what was computed.
+
+    (2) Physical impossibility: up-type and down-type quarks are BOTH in
+        the fundamental representation of SU(3) color. The quadratic
+        Casimir of a representation is the same for every state in it --
+        C2(fundamental of SU(3)) = (3^2-1)/(2*3) = 4/3, identically, for
+        every color triplet. Color charge cannot distinguish an up quark
+        from a down quark; that is what "being in the same representation"
+        means. So no SU(3) Casimir argument can produce a k_u/k_d ratio
+        at all.
+
+    Distinguishing up-type from down-type Yukawa couplings requires SU(2)
+    weak-isospin structure (T_3=+1/2 vs T_3=-1/2), which this framework
+    has not derived a coupling-ratio prediction from. This is reported
+    here as an honest open problem rather than removed silently, because
+    the numerical near-agreement (fitted k_u/k_d ~ 1.31 vs the wrongly
+    asserted target 4/3 ~ 1.33) was specifically highlighted in earlier
+    versions of this lecture as if it were a successful prediction. It
+    was not: it was a fitted number compared against an unmotivated and
+    internally inconsistent target.
     """
-    subsection("Eq 11.21: SU(3)/SU(2) Casimir ratio prediction k_u/k_d = 4/3")
-    C2_up = sp.Rational(4, 3)    # SU(3) fundamental quadratic Casimir (same for both)
-    C2_down = sp.Rational(3, 4)  # ... actually the ratio is the SU(2) isospin factor
-    # The structural prediction used throughout the papers is simply k_u/k_d = 4/3
-    predicted_ratio = sp.Rational(4, 3)
+    subsection("Eq 11.21 -- RETRACTED: k_u/k_d = 4/3 from 'SU(3) Casimir ratio'")
+    C2_up = sp.Rational(4, 3)
+    C2_down = sp.Rational(4, 3)   # corrected: identical, since both are SU(3) fundamentals
+    actual_su3_ratio = C2_up / C2_down
     observed_ratio = k_u / k_d
-    print(f"  Predicted k_u/k_d = 4/3 = {float(predicted_ratio):.6f}")
-    print(f"  Observed  k_u/k_d = {k_u:.3f}/{k_d:.3f} = {observed_ratio:.6f}")
-    discrepancy = abs(observed_ratio - float(predicted_ratio)) / float(predicted_ratio)
-    print(f"  Discrepancy = {discrepancy:.2%}")
-    check("k_u/k_d is within 5% of the predicted 4/3",
-          discrepancy < 0.05)
+    print(f"  Corrected SU(3) Casimir ratio C2(up)/C2(down) = {actual_su3_ratio}")
+    print(f"  (both up-type and down-type quarks are SU(3) color triplets;")
+    print(f"   their quadratic Casimirs are IDENTICAL, so this ratio is exactly 1,")
+    print(f"   not 4/3. SU(3) color provides NO prediction for k_u/k_d.)")
+    check("SU(3) Casimir ratio for up vs down quarks is exactly 1 (no distinguishing power)",
+          actual_su3_ratio == 1)
     print()
-    print("  Note: the full derivation of k_u/k_d = 4/3 from SU(3) color structure")
-    print("  requires the spectral action Yukawa coupling renormalization at the")
-    print("  seam scale, which lies beyond the scope of this lecture. The")
-    print("  numerical agreement at the 1-5% level strongly supports the prediction.")
+    print(f"  Observed (fitted) k_u/k_d = {k_u:.3f}/{k_d:.3f} = {observed_ratio:.6f}")
+    print(f"  This is a FITTED number with no independent group-theoretic prediction")
+    print(f"  to compare it against from this framework. Distinguishing up-type from")
+    print(f"  down-type Yukawa couplings requires SU(2) isospin structure (T_3=+-1/2)")
+    print(f"  that has not been derived here. See lecture_06b_rigorous_corrections.py")
+    print(f"  for the full re-examination.")
+    print()
 
 
 # ---------------------------------------------------------------------------
@@ -302,7 +328,8 @@ def run():
     subsection("Lecture 6 summary")
     print(f"  Universal formula m_n = M_f exp(-k_f/(2-n)) fitted to all three types.")
     print(f"  k_l={k_l:.2f}, k_u={k_u:.2f}, k_d={k_d:.2f}   (physic.py refs: 5.63, 9.80, 7.49)")
-    print(f"  k_u/k_d = {k_u/k_d:.3f}  vs predicted 4/3 = {4/3:.3f}")
+    print(f"  k_u/k_d = {k_u/k_d:.3f}  (RETRACTED: 'SU(3) Casimir = 4/3' was wrong --")
+    print(f"           color cannot distinguish up/down quarks; fitted value only)")
     print(f"  Lambda consistent across types: avg ≈ {(Lambda_l+Lambda_u+Lambda_d)/3:.3f}")
     print(f"  t/b cross-check fails by ~13x: documented limitation, not hidden error.")
     return True
